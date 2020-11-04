@@ -18,16 +18,16 @@ namespace submissionstorage.Stories
         /// //////////////////////////////////////////////////////////////////////////////////////////
         public SubmissionStore(CommonContext context) : base(context) { }
 
+        public Submission GetLastId()
+        {
+            return Query
+                .OrderByDescending(_ => _.Id).FirstOrDefault();
+        }
+
         public Submission GetById(long id)
         {
             return Query
                 .FirstOrDefault(_ => _.Id == id);
-        }
-
-        public Submission GetByName(string name)
-        {
-            return Query
-                .FirstOrDefault(_ => _.Fieldname == name);
         }
 
         public List<Submission> GetAll()

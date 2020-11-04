@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using submissionstorage.Stories.Common;
 using System;
 
-namespace submissionstorage
+namespace submissionstorage.Stories.Common
 {
     public static class EFServiceCollectionExtension
     {

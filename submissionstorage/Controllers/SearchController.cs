@@ -23,8 +23,15 @@ namespace submissionstorage.Controllers
             this.submissionTypeStore = submissionTypeStore_;
         }
         [HttpGet]
-        [Route("reset")]
-        public IEnumerable<Control> Reset()
+        [Route("lastid")]
+        public long Lastid()
+        {
+            var last = this.submissionStore.GetLastId();
+            return last!=null?last.Id:0;
+        }
+        [HttpGet]
+        [Route("clear")]
+        public IEnumerable<Control> Clear()
         {
             var allsub = this.submissionStore.GetAll();
             this.submissionStore.Delete(allsub);
@@ -34,9 +41,14 @@ namespace submissionstorage.Controllers
             this.submissionTypeStore.Delete(allsubtype);
             this.submissionTypeStore.Save();
 
-            var types = new List<string>();
-            var defaultControls = new Stories.DefaultControls();
-            foreach (Control control in defaultControls.Items)
+            return new List<Control>();
+        }
+        [HttpPost]
+        [Route("set")]
+        public IEnumerable<Control> Set(List<Control> controls)
+        {
+            var types = this.submissionTypeStore.GetAll().Select(_=>_.Name).ToList();
+            foreach (Control control in controls)
             {
                 if (types.Contains(control.Type)) continue;
                 submissionTypeStore.Insert(new Submission_type(control.Type));
@@ -44,49 +56,51 @@ namespace submissionstorage.Controllers
             }
             this.submissionTypeStore.Save();
 
+            var allsub = this.submissionStore.GetAll().ToList();
             var allnewsubtype = this.submissionTypeStore.GetAll();
-            foreach (Control control in defaultControls.Items)
+            foreach (Control control in controls)
             {
+                var subexists = allsub.Where(_ => control.Name == "field" + _.Id).FirstOrDefault();
+                if (subexists != null) continue;
+
                 long foreign = allnewsubtype.Where(_ => _.Name == control.Type).SingleOrDefault().Id;
-                var sub = new Submission(control.Name, control.Value, foreign);
+                var sub = new Submission(control.Value, foreign);
                 submissionStore.Insert(sub);
             }
             submissionStore.Save();
 
-            return defaultControls.Items;
+            var allnewsub = this.submissionStore.GetAll().ToList();
+            var list = allnewsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
+            return list;
         }
         [HttpGet]
         [Route("list")]
         public IEnumerable<Control> List()
         {
-            var allsub = this.submissionStore.GetAll();
-            if (allsub.Count == 0)
-            {
-                var defaultControls = new Stories.DefaultControls();
-                return defaultControls.Items;
-            }
-            else
-            {
-                var list = allsub.Select(_ => new Control(_.Id, _.Fieldname, _.Type.Name, _.Fieldvalue));
-                return list;
-            }
+            var allsub = this.submissionStore.GetAll().ToList();
+            var list = allsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
+            return list;
         }
         [HttpPost]
         [Route("add")]
         public void Add(Control control)
         {
             var allnewsubtype = submissionTypeStore.GetAll();
-            var exist = allnewsubtype.Where(_ => _.Name == control.Name).ToList();
+            var exist = allnewsubtype.Where(_ => _.Name == control.Type).ToList();
             Submission_type type = null;
 
-            if (exist.Count > 0) type = exist[0];
+            if (exist.Count > 0)
+            {
+                type = exist[0];
+            }
+            else
             {
                 type = new Submission_type(control.Type);
                 submissionTypeStore.Insert(type);
                 submissionTypeStore.Save();
             }
 
-            var sub = new Submission(control.Name, control.Value, type.Id);
+            var sub = new Submission(control.Value, type.Id);
             submissionStore.Insert(sub);
             submissionStore.Save();
         }
@@ -94,7 +108,7 @@ namespace submissionstorage.Controllers
         [Route("remove")]
         public void Remove(Control control)
         {
-            var sub = this.submissionStore.GetByName(control.Name);
+            var sub = this.submissionStore.GetById(control.Id);
             this.submissionStore.Delete(sub);
             this.submissionStore.Save();
         }
@@ -102,7 +116,7 @@ namespace submissionstorage.Controllers
         [Route("change")]
         public void Change(Control control)
         {
-            var sub = this.submissionStore.GetByName(control.Name);
+            var sub = this.submissionStore.GetById(control.Id);
             sub.Fieldvalue = control.Value;
             this.submissionStore.Save();
         }

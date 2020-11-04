@@ -13,6 +13,7 @@ using Microsoft.Extensions.Options;
 using submissionstorage.Entities;
 using submissionstorage.Entities.Searching;
 using submissionstorage.Stories;
+using submissionstorage.Stories.Common;
 
 namespace submissionstorage
 {

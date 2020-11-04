@@ -11,7 +11,8 @@ namespace submissionstorage.Entities.Searching
         public string Name { get; set; }
         public string Type { get; set; }
         public string Value { get; set; }
-        public Control(long id_, string name_, string type_, string value_) { Id = id_; Name = name_; Type = type_; Value = value_; }
+        public string Error { get; set; }
+        public Control(long id_, string name_, string type_, string value_) { Id = id_; Name = name_; Type = type_; Value = value_; Error = null; }
         public Control() { }
     }
 }
