@@ -18,23 +18,19 @@ namespace submissionstorage.Stories
         /// //////////////////////////////////////////////////////////////////////////////////////////
         public SubmissionStore(CommonContext context) : base(context) { }
 
-        public Submission GetLastId()
+        public async Task<Submission> GetLastId()
         {
-            return Query
-                .OrderByDescending(_ => _.Id).FirstOrDefault();
+            return await Query.OrderByDescending(_ => _.Id).FirstOrDefaultAsync();
         }
 
-        public Submission GetById(long id)
+        public async Task<Submission> GetById(long id)
         {
-            return Query
-                .FirstOrDefault(_ => _.Id == id);
+            return await Query.FirstOrDefaultAsync(_ => _.Id == id);
         }
 
-        public List<Submission> GetAll()
+        public async Task<List<Submission>> GetAll()
         {
-            return Query
-                .Include(_=>_.Type)
-                .ToList();
+            return await Query.Include(_=>_.Type).ToListAsync();
         }
     }
 }

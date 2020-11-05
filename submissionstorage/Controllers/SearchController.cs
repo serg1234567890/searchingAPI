@@ -22,32 +22,9 @@ namespace submissionstorage.Controllers
             this.submissionStore = submissionStore_;
             this.submissionTypeStore = submissionTypeStore_;
         }
-        [HttpGet]
-        [Route("lastid")]
-        public long Lastid()
+        public async Task<ActionResult> SaveControls(List<Control> controls)
         {
-            var last = this.submissionStore.GetLastId();
-            return last!=null?last.Id:0;
-        }
-        [HttpGet]
-        [Route("clear")]
-        public IEnumerable<Control> Clear()
-        {
-            var allsub = this.submissionStore.GetAll();
-            this.submissionStore.Delete(allsub);
-            this.submissionStore.Save();
-
-            var allsubtype = this.submissionTypeStore.GetAll();
-            this.submissionTypeStore.Delete(allsubtype);
-            this.submissionTypeStore.Save();
-
-            return new List<Control>();
-        }
-        [HttpPost]
-        [Route("set")]
-        public IEnumerable<Control> Set(List<Control> controls)
-        {
-            var types = this.submissionTypeStore.GetAll().Select(_=>_.Name).ToList();
+            var types = await this.submissionTypeStore.GetAllNames();
             foreach (Control control in controls)
             {
                 if (types.Contains(control.Type)) continue;
@@ -56,36 +33,65 @@ namespace submissionstorage.Controllers
             }
             this.submissionTypeStore.Save();
 
-            var allsub = this.submissionStore.GetAll().ToList();
-            var allnewsubtype = this.submissionTypeStore.GetAll();
+            var allsub = await this.submissionStore.GetAll();
+            var allnewsubtype = await this.submissionTypeStore.GetAll();
             foreach (Control control in controls)
             {
-                var subexists = allsub.Where(_ => control.Name == "field" + _.Id).FirstOrDefault();
-                if (subexists != null) continue;
-
                 long foreign = allnewsubtype.Where(_ => _.Name == control.Type).SingleOrDefault().Id;
                 var sub = new Submission(control.Value, foreign);
                 submissionStore.Insert(sub);
             }
             submissionStore.Save();
 
-            var allnewsub = this.submissionStore.GetAll().ToList();
-            var list = allnewsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
-            return list;
+            return Ok();
         }
-        [HttpGet]
-        [Route("list")]
-        public IEnumerable<Control> List()
+        [HttpPost]
+        [Route("clear")]
+        public async Task<ActionResult<IEnumerable<Control>>> Clear(List<Control> controls)
         {
-            var allsub = this.submissionStore.GetAll().ToList();
+            var allsub = await this.submissionStore.GetAll();
+            this.submissionStore.Delete(allsub);
+            this.submissionStore.Save();
+
+            var allsubtype = await this.submissionTypeStore.GetAll();
+            this.submissionTypeStore.Delete(allsubtype);
+            this.submissionTypeStore.Save();
+
+            await SaveControls(controls);
+
+            var allnewsub = await this.submissionStore.GetAll();
+            var list = allnewsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
+            return Ok(list);
+        }
+        [HttpPost]
+        [Route("set")]
+        public async Task<ActionResult<IEnumerable<Control>>> Set(List<Control> controls)
+        {
+            await SaveControls(controls);
+
+            var allnewsub = await  this.submissionStore.GetAll();
+            var list = allnewsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
+            return Ok(list);
+        }
+        [HttpPost]
+        [Route("list")]
+        public async Task<ActionResult<IEnumerable<Control>>> List(List<Control> defaults)
+        {
+            var allsub = await this.submissionStore.GetAll();
+            if (allsub.Count == 0)
+            {
+                await SaveControls(defaults);
+                allsub = await  this.submissionStore.GetAll();
+            }
+
             var list = allsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
-            return list;
+            return Ok(list);
         }
         [HttpPost]
         [Route("add")]
-        public void Add(Control control)
+        public async Task<ActionResult<Control>> Add(Control control)
         {
-            var allnewsubtype = submissionTypeStore.GetAll();
+            var allnewsubtype = await submissionTypeStore.GetAll();
             var exist = allnewsubtype.Where(_ => _.Name == control.Type).ToList();
             Submission_type type = null;
 
@@ -103,22 +109,37 @@ namespace submissionstorage.Controllers
             var sub = new Submission(control.Value, type.Id);
             submissionStore.Insert(sub);
             submissionStore.Save();
+
+            return Ok(new Control(sub, type.Name));
         }
         [HttpPost]
         [Route("remove")]
-        public void Remove(Control control)
+        public async Task<ActionResult> Remove(Control control)
         {
-            var sub = this.submissionStore.GetById(control.Id);
+            if (!control.Id.HasValue)
+            {
+                return BadRequest("Control ID not defined");
+            }
+            var sub = await this.submissionStore.GetById(control.Id.Value);
             this.submissionStore.Delete(sub);
             this.submissionStore.Save();
+
+            return Ok();
         }
         [HttpPost]
         [Route("change")]
-        public void Change(Control control)
+        public async Task<ActionResult> Change(Control control)
         {
-            var sub = this.submissionStore.GetById(control.Id);
+            if (!control.Id.HasValue)
+            {
+                return BadRequest("Control ID not defined");
+            }
+
+            var sub = await this.submissionStore.GetById(control.Id.Value);
             sub.Fieldvalue = control.Value;
             this.submissionStore.Save();
+
+            return Ok();
         }
     }
 }

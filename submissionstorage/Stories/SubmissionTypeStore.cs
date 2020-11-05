@@ -18,16 +18,17 @@ namespace submissionstorage.Stories
         /// //////////////////////////////////////////////////////////////////////////////////////////
         public SubmissionTypeStore(CommonContext context) : base(context) { }
 
-        public Submission_type GetById(long id)
+        public async Task<Submission_type> GetById(long id)
         {
-            return Query
-                .FirstOrDefault(_ => _.Id == id);
+            return await Query.FirstOrDefaultAsync(_ => _.Id == id);
         }
-
-        public List<Submission_type> GetAll()
+        public async Task<List<Submission_type>> GetAll()
         {
-            return Query
-                .ToList();
+            return await Query.ToListAsync();
+        }
+        public async Task<List<string>> GetAllNames()
+        {
+            return await Query.Select(_=>_.Name).ToListAsync();
         }
     }
 }
