@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,32 @@ using submissionstorage.Stories.Common;
 
 namespace submissionstorage
 {
+    public class ChatHub : Hub
+    {
+        public async Task Send(string message)
+        {
+            await this.Clients.All.SendAsync("Send", message);
+        }
+        public override async Task OnConnectedAsync()
+        {
+            var context = this.Context.GetHttpContext();
+            // получаем кук name
+            if (context.Request.Cookies.ContainsKey("name"))
+            {
+                string userName;
+                if (context.Request.Cookies.TryGetValue("name", out userName))
+                {
+                    var name = $"{userName}";
+                }
+            }
+            // получаем юзер-агент
+            var useragent = $"UserAgent = {context.Request.Headers["User-Agent"]}";
+            // получаем ip
+            var ip = $"RemoteIpAddress = {context.Connection.RemoteIpAddress.ToString()}";
+
+            await base.OnConnectedAsync();
+        }
+    }
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -34,6 +61,7 @@ namespace submissionstorage
                 options.UseSqlServer(Configuration.GetConnectionString("DevConnection"));
             });
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddSignalR();
 
             services.AddEntityFrameworkStoreService<Submission, SubmissionStore>();
             services.AddEntityFrameworkStoreService<Submission_type, SubmissionTypeStore>();
@@ -62,6 +90,10 @@ namespace submissionstorage
                 app.UseDeveloperExceptionPage();
             }
             app.UseCors("CorsPolicy");
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<ChatHub>("/chat");
+            });
 
             app.UseMvc();
         }
