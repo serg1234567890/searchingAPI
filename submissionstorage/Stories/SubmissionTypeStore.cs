@@ -24,11 +24,11 @@ namespace submissionstorage.Stories
         }
         public async Task<List<Submission_type>> GetAll()
         {
-            return await Query.ToListAsync();
+            return await Query.OrderBy(_ => _.Name).ToListAsync();
         }
         public async Task<List<string>> GetAllNames()
         {
-            return await Query.Select(_=>_.Name).ToListAsync();
+            return await Query.Select(_ => _.Name).OrderBy(_ => _).ToListAsync();
         }
     }
 }

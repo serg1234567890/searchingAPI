@@ -45,6 +45,14 @@ namespace submissionstorage.Controllers
 
             return Ok();
         }
+        [HttpGet]
+        [Route("search")]
+        public async Task<ActionResult<IEnumerable<Control>>> Search()
+        {
+            var allsub = await this.submissionStore.GetAll();
+            var list = allsub.Select(_ => new Control(_.Id, "field" + _.Id, _.Type.Name, _.Fieldvalue));
+            return Ok(list);
+        }
         [HttpPost]
         [Route("clear")]
         public async Task<ActionResult<IEnumerable<Control>>> Clear(List<Control> controls)
@@ -124,7 +132,7 @@ namespace submissionstorage.Controllers
             this.submissionStore.Delete(sub);
             this.submissionStore.Save();
 
-            return Ok();
+            return Ok(control);
         }
         [HttpPost]
         [Route("change")]
@@ -139,7 +147,7 @@ namespace submissionstorage.Controllers
             sub.Fieldvalue = control.Value;
             this.submissionStore.Save();
 
-            return Ok();
+            return Ok(control);
         }
     }
 }

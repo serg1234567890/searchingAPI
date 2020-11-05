@@ -71,8 +71,8 @@ namespace submissionstorage
                 options.AddPolicy("CorsPolicy",
                     builder => builder
                     .WithOrigins(new[] {
-                        "http://localhost:5200",
-                        "http://localhost:5100"
+                        "http://localhost:9100",
+                        "http://localhost:9200"
                     })
                     .AllowAnyMethod()
                     .AllowAnyHeader()

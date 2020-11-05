@@ -17,20 +17,13 @@ namespace submissionstorage.Stories
         /// </summary>
         /// //////////////////////////////////////////////////////////////////////////////////////////
         public SubmissionStore(CommonContext context) : base(context) { }
-
-        public async Task<Submission> GetLastId()
-        {
-            return await Query.OrderByDescending(_ => _.Id).FirstOrDefaultAsync();
-        }
-
         public async Task<Submission> GetById(long id)
         {
             return await Query.FirstOrDefaultAsync(_ => _.Id == id);
         }
-
         public async Task<List<Submission>> GetAll()
         {
-            return await Query.Include(_=>_.Type).ToListAsync();
+            return await Query.Include(_ => _.Type).OrderBy(_ => _.Id).ToListAsync();
         }
     }
 }

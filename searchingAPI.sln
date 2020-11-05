@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "submissionstorage", "submissionstorage\submissionstorage.csproj", "{FAC811F1-2843-438E-B152-512C1EE512FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "submissionstorage", "submissionstorage\submissionstorage.csproj", "{FAC811F1-2843-438E-B152-512C1EE512FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestSubmissionstorage", "XUnitTestSubmissionstorage\XUnitTestSubmissionstorage.csproj", "{AE4935A2-19B9-44A7-90CF-40B6609F1EA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{FAC811F1-2843-438E-B152-512C1EE512FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAC811F1-2843-438E-B152-512C1EE512FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAC811F1-2843-438E-B152-512C1EE512FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE4935A2-19B9-44A7-90CF-40B6609F1EA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE4935A2-19B9-44A7-90CF-40B6609F1EA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE4935A2-19B9-44A7-90CF-40B6609F1EA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE4935A2-19B9-44A7-90CF-40B6609F1EA9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
